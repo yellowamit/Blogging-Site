@@ -13,7 +13,7 @@ const postModel=mongoose.model("post",postSchema);
 
 // for lodash
 // Load the full build.
-var _ = require('lodash');
+const _= require('lodash');
 // Load the core build.
 // var _ = require('lodash/core');
 // // Load the FP build for immutable auto-curried iteratee-first data-last methods.
@@ -62,7 +62,7 @@ app.get("/", async function(req, res){
   } catch (error) {
     console.error("Error retrieving the collection:", error);
   }
-  res.render("home", { startingContent: homeStartingContent,posts:posts });
+  res.render("home", { startingContent: homeStartingContent,posts:posts});
 });
 app.get("/about", (req, res) => {
   res.render("about", { aboutContent: aboutContent });
@@ -99,19 +99,39 @@ app.post("/compose", (req, res) => {
 
 
 //for params
-app.get("/posts/:post",(req,res)=>{
-  const requestedTitle=_.lowerCase(req.params.post);
+// app.get("/posts/:postId",(req,res)=>{
+//   const requestedTreq.params.post);
 
-  posts.forEach((post)=>{
-    if(_.lowerCase(post.title)===requestedTitle){
-      res.render("post",{title:post.title,content:post.content});
-      // break;
-    }
-  })
+//   posts.forEach((post)=>{
+//     if(_.lowerCase(post.title)===requestedTitle){
+//       res.render("post",{title:post.title,content:post.content});
+//       // break;
+//     }
+//   })
 
   
  
 
+// });
+app.get("/posts/:postId", async (req, res) => {
+  const requestedPostId = req.params.postId;
+
+  try {
+    // Use the findById method to fetch the post using its _id
+    const post = await postModel.findById(requestedPostId);
+
+    if (post) {
+      res.render("post", {
+        title: post.title,
+        content: post.content,
+      });
+    } else {
+      res.status(404).send("Post not found.");
+    }
+  } catch (err) {
+    console.error("Error fetching the post:", err);
+    res.status(500).send("An error occurred while fetching the post.");
+  }
 });
 
 app.listen(3000, function () {
