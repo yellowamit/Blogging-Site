@@ -3,9 +3,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
+const mongoose=require("mongoose")
 
 
-
+mongoose.connect("mongodb+srv://admin-amit:12345@cluster0.1xhvswt.mongodb.net/postDb?retryWrites=true&w=majority&appName=Cluster0");
+const postSchema=new mongoose.Schema({title:String,content:String});
+const postModel=mongoose.model("post",postSchema);
+ 
 
 // for lodash
 // Load the full build.
@@ -51,7 +55,13 @@ app.use(express.static("public"));
 let posts=[];
 
 
-app.get("/", (req, res) => {
+app.get("/", async function(req, res){
+  try {
+    posts = await postModel.find({});
+  
+  } catch (error) {
+    console.error("Error retrieving the collection:", error);
+  }
   res.render("home", { startingContent: homeStartingContent,posts:posts });
 });
 app.get("/about", (req, res) => {
@@ -67,12 +77,21 @@ app.get("/compose", (req, res) => {
 //object to store post
 
 app.post("/compose", (req, res) => {
-  var post={
-    title:req.body.postTitle,
-    content: req.body.postBody
-  };
-  posts.push(post);
-  res.redirect("/");
+  // var post={
+  //   title:req.body.postTitle,
+  //   content: req.body.postBody
+  // };
+  // posts.push(post);
+  const post=new postModel({title:req.body.postTitle,content:req.body.postBody});
+  console.log(post);
+  post.save()
+    .then(() => {
+      res.redirect("/");
+    })
+    .catch((err) => {
+      console.error("Error saving post:", err);
+      res.status(500).send("An error occurred while saving the post.");
+    });
 });
 
 
